@@ -1,3 +1,6 @@
+// Autor: Salas, Sebastián Ariel. 
+// Comisión: 57730.
+
 // --- FUNCIONES ---
 function mostrarMenu (){
     alert (' ---- MENU DE OPCIONES ----' + 
