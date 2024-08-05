@@ -1,143 +1,265 @@
-// Autor: Salas, Sebastián Ariel. 
+// Autor: Salas, Sebastián Ariel.
 // Comisión: 57730.
 
 // ----------------------- FUNCIONES ---------------------------------
-function mostrarMenu (){
-    alert (' ---- MENU DE OPCIONES ----' + 
-        '\n 1. Ingresar NUEVO empleado.' +
-        '\n 2. Cargar ASISTENCIA.' +
-        '\n 3. Calcular el SUELDO.' +
-        '\n 4. Agregar BONIFICACION. ' +
-        '\n 0. Salir.' 
-    );
-}
 // ---- CONSTRUCTOR DE NUEVOS EMPLEADOS -----
-function Empleado (nombre, apellido, dni){
-    this.nombre = nombre;
-    this.apellido = apellido;
-    this.dni = dni;
-    this.horasTrabajadas = 0;
-    this.sueldoTotal = 0;
-
+function Empleado(nombre, apellido, dni) {
+  this.nombre = nombre;
+  this.apellido = apellido;
+  this.dni = dni;
+  this.horasTrabajadas = 0;
+  this.sueldoTotal = 0;
 }
-
-// --- PEDIR QUE EL EMPLEADO CARGUE SUS DATOS ----
-function obtenerDatosDeEmpleado(){
-    const nombre = prompt("Ingrese su NOMBRE: ");
-    const apellido = prompt("Ingrese su APELLIDO: ");
-    const dni = Number(prompt("Ingrese su DNI: "));
-    return new Empleado(nombre, apellido, dni);
-}
-
-function esHoraExtra(horasTrabajadas){
-    return horasTrabajadas > 8 ? ((horasTrabajadas - 8) * 1.5 + 8) : horasTrabajadas;
-}
-
-function calculoHora(horasTrabajadas, valorHora){
-    return horasTrabajadas * valorHora;
-}
-
-// ESTA FUNCION CONTROLA QUE LA HORA FINAL NO SEA ANTERIOR A LA DE INICIO <FORMATO 0 - 24HS>.
-function calcularHorasTrabajadas(horaInicio, horaFin) {
-    if (horaInicio>=0 && horaFin<=24 && horaFin>horaInicio) {
-        return horaFin - horaInicio;
-    } else {
-        alert('Horas ingresadas <NO VALIDAS>. Intente nuevamente.');
-        return -1; // VALOR QUE INDICA ERROR    
-    }
-}
-
-// FUNCION PARA SELECCIONAR EL EMPLEADO Y RETORNAR EL INDICE
-function seleccionarEmpleado (){
-    let empleadoSeleccionado = prompt("¿A que empleado desea seleccionar?")
-    return empleados.findIndex(empleado => empleado.nombre.toLowerCase() === empleadoSeleccionado.toLowerCase());
-}
-
-// FUNCION QUE CARGA LAS HORAS TRABAJADAS DE LOS EMPLEADOS
-function cargarHoras(indiceEmpleado) {
-    const horasInicio = Number(prompt("Ingrese la HORA DE INICIO"));
-    const horasFin = Number(prompt("Ingrese la HORA DE SALIDA"));
-    const horasTrabajadas = calcularHorasTrabajadas(horasInicio, horasFin);
-    if (horasTrabajadas !== -1) {
-        empleados[indiceEmpleado].horasTrabajadas += horasTrabajadas;
-    }
-    return horasTrabajadas;
-}
-
-alert("BIENVENIDO AL SISTEMA DE ASISTENCIA");
-
-// --- VARIABLES ---
-let opcion = -1;
 
 // --- ARRAY DE EMPLEADOS ----
-const empleados = [];
+const empleados = JSON.parse(localStorage.getItem("empleados")) || [];
 
-// ------------------------------------------------ MAIN ------------------------------------------------------
+//-------------------- DOM -------------------------
+document.getElementById("openFormAgregarEmpleado").addEventListener("click", function () {
+    createFloatingForm("agregar");
+  });
 
-while (opcion !== 0) {
-    mostrarMenu(); // MOSTRAR MENU DE OPCIONES
-    opcion = Number(prompt('Ingrese una opcion del 0 al 4: '));
-    switch(opcion){
-        // ----- CARGAR EMPLEADOS ---
-        case 1 :
-            // ---- CARGA DE EMPLEADOS ----
-            let continuar = true;
-            while (continuar) {
-                const empleado = obtenerDatosDeEmpleado();
-                empleados.push(empleado);
-                continuar = confirm("¿Desea cargar otro empleado? ")
-                console.log(empleados);
-            }
-            break;
+document.getElementById("openFormRegistrarHoras").addEventListener("click", function () {
+    createFloatingForm("registrarHoras");
+  });
 
-        // CARGAR ASISTENCIA.
-        case 2 :
-            // --- INSERTAR ASISTENCIA ----
-            let continua = true;
-            while (continua) {
-                let indiceEmpleado = seleccionarEmpleado();
-                if (indiceEmpleado !== -1 ){
-                    cargarHoras(indiceEmpleado);
-                    continua = confirm("¿Desea continuar cargando?")
-                }else{
-                    alert("El Empleado que intenta buscar, NO EXISTE. Por favor intente de nuevo.");
-                }
-            }
-            break;
+document.getElementById("openFormAgregarBonificacion").addEventListener("click", function () {
+    createFloatingForm("agregarBonificacion");
+  });
 
-        // SACAR CALCULO DEL SUELDO.
-        case 3 :
-            indiceEmpleadoSueldo = seleccionarEmpleado();
-            if (indiceEmpleadoSueldo !== -1){
-                valorHora = Number(prompt('Ingrese el VALOR de la hora: '));
-                let horasConExtra = esHoraExtra(empleados[indiceEmpleadoSueldo].horasTrabajadas);
-                empleados[indiceEmpleadoSueldo].sueldoTotal = calculoHora(horasConExtra, valorHora);
-                alert('EMPLEADO: '+ empleados[indiceEmpleadoSueldo].nombre.toUpperCase()+ ' TOTAL: $' + empleados[indiceEmpleadoSueldo].sueldoTotal);
-            }else{
-                alert("El Empleado que intenta buscar, NO EXISTE. Por favor intente de nuevo.");
-            }
-            break;
-        
-        // AGREGAR BONIFICACION EXTRA AL SUELDO.
-        case 4 :
-            indiceEmpleadoBonificacion = seleccionarEmpleado();
-            if (indiceEmpleadoBonificacion !== -1){
-                let bonificacion = Number(prompt('Ingrese el monto de la BONIFICACION: $ '));
-                empleados[indiceEmpleadoBonificacion].sueldoTotal = empleados[indiceEmpleadoBonificacion].sueldoTotal + bonificacion;
-                alert('EMPLEADO: '+ empleados[indiceEmpleadoBonificacion].nombre.toUpperCase() + ' TOTAL: $' + empleados[indiceEmpleadoBonificacion].sueldoTotal);
-            }
-            else{
-                    alert("El Empleado que intenta buscar, NO EXISTE. Por favor intente de nuevo.");
-            }
-            break;
+function createFloatingForm(type) {
+  // CONTENEDOR FORMULARIO
+  const formContainer = document.createElement("div");
+  formContainer.id = "floatingForm";
+  formContainer.className = "floating-form";
 
-        //  SALIR DEL MENU
-        case 0 :   
-            alert('Gracias por usar el sistema.');
-            break;
+  // FORMULARIO DINÁMICO
+  const form = document.createElement("form");
+  form.id = "dataForm";
 
-        // EN CUALQUIER OTRA OPCION, MOSTRAR ESTE MENSAJE.
-        default:
-            alert("Opcion NO VALIDA, vuelva a intentar, por favor. ");
-    }
+  if (type === "agregar") {
+    createAgregarEmpleadoForm(form);
+  } else if (type === "registrarHoras") {
+    createRegistrarHorasForm(form);
+  } else if (type === "agregarBonificacion") {
+    createAgregarBonificacionForm(form);
+  }
+
+  // BOTON DE CERRAR
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.id = "closeFormButton";
+  closeButton.textContent = "Cerrar";
+  form.appendChild(closeButton);
+
+  // Agregar el formulario al contenedor
+  formContainer.appendChild(form);
+
+  // Agregar el contenedor al cuerpo del documento
+  document.body.appendChild(formContainer);
+
+  // Mostrar el formulario
+  formContainer.style.display = "block";
+
+  // Añadir el evento de cerrar
+  closeButton.addEventListener("click", function () {
+    formContainer.style.display = "none";
+    document.body.removeChild(formContainer);
+  });
 }
+
+function createAgregarEmpleadoForm(form) {
+  // CAMPOS DEL FORMULARIO
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.id = "name";
+  nameInput.name = "name";
+  nameInput.placeholder = "Nombre";
+  nameInput.required = true;
+  form.appendChild(nameInput);
+
+  const lastNameInput = document.createElement("input");
+  lastNameInput.type = "text";
+  lastNameInput.id = "lastName";
+  lastNameInput.name = "lastName";
+  lastNameInput.placeholder = "Apellido";
+  lastNameInput.required = true;
+  form.appendChild(lastNameInput);
+
+  const dniInput = document.createElement("input");
+  dniInput.type = "text";
+  dniInput.id = "dni";
+  dniInput.name = "dni";
+  dniInput.placeholder = "D.N.I";
+  dniInput.required = true;
+  form.appendChild(dniInput);
+
+  // BOTON DE ENVIAR
+  const submitButton = document.createElement("button");
+  submitButton.type = "submit";
+  submitButton.textContent = "Enviar";
+  form.appendChild(submitButton);
+
+  // Añadir el evento de enviar
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const empleado = crearEmpleado(
+      nameInput.value,
+      lastNameInput.value,
+      dniInput.value
+    );
+    empleados.push(empleado);
+    localStorage.setItem("empleados", JSON.stringify(empleados));
+    alert("El EMPLEADO ha sido cargado con éxito.");
+    agregarEmpleadoTabla(empleado);
+    document.getElementById("floatingForm").remove();
+  });
+}
+
+function createRegistrarHorasForm(form) {
+  const dniInput = document.createElement("input");
+  dniInput.type = "text";
+  dniInput.id = "dni";
+  dniInput.name = "dni";
+  dniInput.placeholder = "D.N.I";
+  dniInput.required = true;
+  form.appendChild(dniInput);
+
+  const horaInicioInput = document.createElement("input");
+  horaInicioInput.type = "time";
+  horaInicioInput.id = "horaInicio";
+  horaInicioInput.name = "horaInicio";
+  horaInicioInput.required = true;
+  form.appendChild(horaInicioInput);
+
+  const horaFinInput = document.createElement("input");
+  horaFinInput.type = "time";
+  horaFinInput.id = "horaFin";
+  horaFinInput.name = "horaFin";
+  horaFinInput.required = true;
+  form.appendChild(horaFinInput);
+
+  const valorHoraInput = document.createElement("input");
+  valorHoraInput.type = "number";
+  valorHoraInput.id = "valorHora";
+  valorHoraInput.name = "valorHora";
+  valorHoraInput.placeholder = "Valor Hora";
+  valorHoraInput.required = true;
+  form.appendChild(valorHoraInput);
+
+  const submitButton = document.createElement("button");
+  submitButton.type = "submit";
+  submitButton.textContent = "Registrar";
+  form.appendChild(submitButton);
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const dni = dniInput.value;
+    const horaInicio = horaInicioInput.value.split(":");
+    const horaFin = horaFinInput.value.split(":");
+    const valorHora = parseFloat(valorHoraInput.value);
+    const inicioMinutos =
+      parseInt(horaInicio[0]) * 60 + parseInt(horaInicio[1]);
+    const finMinutos = parseInt(horaFin[0]) * 60 + parseInt(horaFin[1]);
+    const totalMinutosTrabajados = finMinutos - inicioMinutos;
+    const horasTrabajadas = totalMinutosTrabajados / 60;
+    const empleado = empleados.find((emp) => emp.dni === dni);
+
+    if (empleado) {
+      const sueldoBase = horasTrabajadas * valorHora;
+      const sueldoTotal =
+        horasTrabajadas > 8
+          ? sueldoBase + (horasTrabajadas - 8) * valorHora * 0.5
+          : sueldoBase;
+
+      empleado.horasTrabajadas += horasTrabajadas;
+      empleado.sueldoTotal += sueldoTotal;
+
+      localStorage.setItem("empleados", JSON.stringify(empleados));
+      alert("Horas registradas correctamente.");
+      actualizarTabla();
+    } else {
+      alert("Empleado no encontrado.");
+    }
+
+    document.getElementById("floatingForm").remove();
+  });
+}
+
+function createAgregarBonificacionForm(form) {
+  const dniInput = document.createElement("input");
+  dniInput.type = "text";
+  dniInput.id = "dni";
+  dniInput.name = "dni";
+  dniInput.placeholder = "D.N.I";
+  dniInput.required = true;
+  form.appendChild(dniInput);
+
+  const bonificacionInput = document.createElement("input");
+  bonificacionInput.type = "number";
+  bonificacionInput.id = "bonificacion";
+  bonificacionInput.name = "bonificacion";
+  bonificacionInput.placeholder = "Bonificación";
+  bonificacionInput.required = true;
+  form.appendChild(bonificacionInput);
+
+  const submitButton = document.createElement("button");
+  submitButton.type = "submit";
+  submitButton.textContent = "Agregar";
+  form.appendChild(submitButton);
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const dni = dniInput.value;
+    const bonificacion = parseFloat(bonificacionInput.value);
+    const empleado = empleados.find((emp) => emp.dni === dni);
+
+    if (empleado) {
+      empleado.sueldoTotal += bonificacion;
+      localStorage.setItem("empleados", JSON.stringify(empleados));
+      alert("Bonificación agregada correctamente.");
+      actualizarTabla();
+    } else {
+      alert("Empleado no encontrado.");
+    }
+
+    document.getElementById("floatingForm").remove();
+  });
+}
+
+function crearEmpleado(nombre, apellido, dni) {
+  return new Empleado(nombre, apellido, dni);
+}
+
+function agregarEmpleadoTabla(empleado) {
+  const tbody = document.querySelector("#empleadosTable tbody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${empleado.dni}</td>
+    <td>${empleado.nombre}</td>
+    <td>${empleado.apellido}</td>
+    <td>${empleado.horasTrabajadas}</td>
+    <td>$ ${empleado.sueldoTotal}</td>
+    <td><button class="btn btn-danger" onclick="eliminarEmpleado('${empleado.dni}')">Eliminar</button></td>
+`;
+  tbody.appendChild(row);
+}
+
+function actualizarTabla() {
+  const tbody = document.querySelector("#empleadosTable tbody");
+  tbody.innerHTML = "";
+  empleados.forEach((empleado) => agregarEmpleadoTabla(empleado));
+}
+
+function eliminarEmpleado(dni) {
+  const index = empleados.findIndex((emp) => emp.dni === dni);
+  if (index > -1) {
+    empleados.splice(index, 1);
+    localStorage.setItem("empleados", JSON.stringify(empleados));
+    actualizarTabla();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  actualizarTabla();
+});
