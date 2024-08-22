@@ -12,7 +12,34 @@ function Empleado(nombre, apellido, dni) {
 }
 
 // --- ARRAY DE EMPLEADOS ----
-const empleados = JSON.parse(localStorage.getItem("empleados")) || [];
+let empleados = JSON.parse(localStorage.getItem("empleados")) || [];
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (empleados.length === 0) {
+    // Si el localStorage está vacío, cargar desde el JSON
+    fetch("empleados.json")
+      .then((response) => response.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          // Inicializa "horasTrabajadas" y "sueldoTotal" en 0 si están undefined
+          empleados = data.map((emp) => ({
+            ...emp,
+            horasTrabajadas: emp.horasTrabajadas || 0,
+            sueldoTotal: emp.sueldoTotal || 0,
+          }));
+          // Guardar los empleados cargados en el localStorage
+          localStorage.setItem("empleados", JSON.stringify(empleados));
+          actualizarTabla();
+        } else {
+          console.error("El JSON cargado no es un array.");
+        }
+      })
+      .catch((error) => console.error("Error al cargar el archivo JSON:", error));
+  } else {
+    // Si ya hay datos en localStorage, actualizar la tabla directamente
+    actualizarTabla();
+  }
+});
 
 //-------------------- DOM -------------------------
 document.getElementById("openFormAgregarEmpleado").addEventListener("click", function () {
@@ -110,7 +137,14 @@ function createAgregarEmpleadoForm(form) {
     );
     empleados.push(empleado);
     localStorage.setItem("empleados", JSON.stringify(empleados));
-    alert("El EMPLEADO ha sido cargado con éxito.");
+    //ALERTA DE OK
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "El empleado ha sido registrado con éxito.",
+      showConfirmButton: false,
+      timer: 1500
+    });
     agregarEmpleadoTabla(empleado);
     document.getElementById("floatingForm").remove();
   });
@@ -176,10 +210,24 @@ function createRegistrarHorasForm(form) {
       empleado.sueldoTotal += sueldoTotal;
 
       localStorage.setItem("empleados", JSON.stringify(empleados));
-      alert("Horas registradas correctamente.");
+      //ALERTA OK
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Horas registradas con éxito.",
+        showConfirmButton: false,
+        timer: 1500
+      });
       actualizarTabla();
     } else {
-      alert("Empleado no encontrado.");
+      //ALERTA DE ERROR
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Empleado no encontrado.",
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
 
     document.getElementById("floatingForm").remove();
@@ -217,10 +265,24 @@ function createAgregarBonificacionForm(form) {
     if (empleado) {
       empleado.sueldoTotal += bonificacion;
       localStorage.setItem("empleados", JSON.stringify(empleados));
-      alert("Bonificación agregada correctamente.");
+      //ALERTA OK.
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Bonificacion cargada correctamente",
+        showConfirmButton: false,
+        timer: 1500
+      });
       actualizarTabla();
     } else {
-      alert("Empleado no encontrado.");
+      //ALERTA DE ERROR
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Empleado no encontrado.",
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
 
     document.getElementById("floatingForm").remove();
@@ -252,12 +314,40 @@ function actualizarTabla() {
 }
 
 function eliminarEmpleado(dni) {
-  const index = empleados.findIndex((emp) => emp.dni === dni);
-  if (index > -1) {
-    empleados.splice(index, 1);
-    localStorage.setItem("empleados", JSON.stringify(empleados));
-    actualizarTabla();
-  }
+  // Primero, preguntar al usuario si realmente quiere eliminar el registro
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: "¡No podrás revertir esta acción!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, eliminarlo',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Si el usuario confirma, se elimina el empleado
+      const index = empleados.findIndex((emp) => emp.dni === dni);
+      if (index > -1) {
+        empleados.splice(index, 1);
+        localStorage.setItem("empleados", JSON.stringify(empleados));
+        actualizarTabla();
+
+        Swal.fire(
+          'Eliminado',
+          'El empleado ha sido eliminado.',
+          'success'
+        );
+      }
+    } else {
+      // Si el usuario cancela, se muestra una notificación de cancelación
+      Swal.fire(
+        'Cancelado',
+        'El empleado no ha sido eliminado.',
+        'error'
+      );
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
